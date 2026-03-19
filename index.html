@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="violet">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>FocusFlow – Ultimate Study Timer</title>
+  <meta name="description" content="Pomodoro focus timer with task management, gamification, ambient sounds, and session tracking."/>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="style.css"/>
+  <link rel="stylesheet" href="auth.css"/>
+</head>
+<body>
+  <canvas id="particles"></canvas>
+
+  <!-- Breathing overlay -->
+  <div class="breathe-overlay" id="breatheOverlay">
+    <div class="breathe-circle" id="breatheCircle">
+      <span id="breatheText">Inhale</span>
+    </div>
+  </div>
+
+  <!-- Header -->
+  <header class="header">
+    <div class="logo">
+      <span class="logo-icon">⚡</span>
+      <span class="logo-text">FocusFlow</span>
+    </div>
+    <div class="header-center">
+      <div class="xp-bar-wrap">
+        <div class="xp-level" id="xpLevel">Lv 1</div>
+        <div class="xp-bar"><div class="xp-fill" id="xpFill"></div></div>
+        <div class="xp-label" id="xpLabel">0 / 100 XP</div>
+      </div>
+    </div>
+    <div class="header-actions">
+      <button class="icon-btn" id="themeBtn" title="Switch Theme">🎨</button>
+      <button class="icon-btn" id="breatheBtn" title="Breathing Exercise">🧘</button>
+      <button class="icon-btn" id="statsBtn" title="Statistics">📊</button>
+      <button class="icon-btn" id="settingsBtn" title="Settings">⚙️</button>
+      <!-- User pill -->
+      <div class="user-pill" id="userPill">
+        <div class="user-pill-avatar" id="headerAvatar">🧑‍🎓</div>
+        <span class="user-pill-name" id="headerName">User</span>
+        <!-- Dropdown -->
+        <div class="user-dropdown" id="userDropdown">
+          <a class="dropdown-item" href="profile.html">👤 My Profile</a>
+          <a class="dropdown-item" href="profile.html">📊 My Stats</a>
+          <div class="dropdown-divider"></div>
+          <div class="dropdown-item danger" id="headerLogout">🚪 Log Out</div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Keyboard shortcut hint -->
+  <div class="shortcut-bar">
+    <span>⌨️ Shortcuts:</span>
+    <kbd>Space</kbd><span>Play/Pause</span>
+    <kbd>R</kbd><span>Reset</span>
+    <kbd>S</kbd><span>Skip</span>
+    <kbd>F</kbd><span>Focus mode</span>
+  </div>
+
+  <!-- Quote Banner -->
+  <div class="quote-banner" id="quoteBanner">
+    <span class="quote-icon">💡</span>
+    <span class="quote-text" id="quoteText"></span>
+  </div>
+
+  <!-- Main App -->
+  <main class="app" id="appMain">
+
+    <!-- LEFT: Timer Section -->
+    <section class="timer-section glass">
+      <!-- Mode Tabs -->
+      <div class="mode-tabs">
+        <button class="mode-tab active" data-mode="focus">🎯 Focus</button>
+        <button class="mode-tab" data-mode="short">☕ Short Break</button>
+        <button class="mode-tab" data-mode="long">🌴 Long Break</button>
+      </div>
+
+      <!-- Circular Timer -->
+      <div class="timer-container" id="timerContainer">
+        <svg class="timer-ring" viewBox="0 0 300 300">
+          <defs>
+            <linearGradient id="rg1" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" class="grad-stop1"/>
+              <stop offset="100%" class="grad-stop2"/>
+            </linearGradient>
+            <filter id="glow">
+              <feGaussianBlur stdDeviation="5" result="coloredBlur"/>
+              <feMerge><feMergeNode in="coloredBlur"/><feMergeNode in="SourceGraphic"/></feMerge>
+            </filter>
+          </defs>
+          <circle class="ring-bg" cx="150" cy="150" r="130"/>
+          <circle class="ring-progress" id="ringProgress" cx="150" cy="150" r="130" filter="url(#glow)" stroke="url(#rg1)"/>
+          <!-- Tick marks -->
+          <g id="tickMarks"></g>
+        </svg>
+        <div class="timer-center">
+          <div class="timer-display" id="timerDisplay">25:00</div>
+          <div class="timer-label" id="timerLabel">Focus Time</div>
+          <div class="active-task-pill" id="activeTaskPill" style="display:none">
+            <span id="activeTaskName">—</span>
+          </div>
+          <div class="session-dots" id="sessionDots"></div>
+        </div>
+      </div>
+
+      <!-- Controls -->
+      <div class="timer-controls">
+        <button class="ctrl-btn" id="resetBtn" title="Reset (R)">↺</button>
+        <button class="play-btn" id="playBtn" title="Play/Pause (Space)">
+          <span id="playIcon">▶</span>
+        </button>
+        <button class="ctrl-btn" id="skipBtn" title="Skip (S)">⏭</button>
+      </div>
+
+      <!-- Sound Controls -->
+      <div class="sound-section">
+        <div class="sound-label">🎵 Ambient Sound</div>
+        <div class="sound-options">
+          <button class="sound-btn active" data-sound="none">🔇 Off</button>
+          <button class="sound-btn" data-sound="rain">🌧 Rain</button>
+          <button class="sound-btn" data-sound="ocean">🌊 Ocean</button>
+          <button class="sound-btn" data-sound="forest">🌲 Forest</button>
+          <button class="sound-btn" data-sound="whitenoise">📻 White Noise</button>
+        </div>
+      </div>
+
+      <!-- Daily goal -->
+      <div class="daily-goal-wrap">
+        <div class="goal-header">
+          <span>🎯 Daily Goal</span>
+          <span id="goalProgress">0 / 8 sessions</span>
+        </div>
+        <div class="goal-bar"><div class="goal-fill" id="goalFill"></div></div>
+      </div>
+    </section>
+
+    <!-- RIGHT: Tasks + Badges -->
+    <div class="right-column">
+
+      <!-- Task Section -->
+      <section class="tasks-section glass">
+        <div class="tasks-header">
+          <h2 class="tasks-title">📝 Tasks</h2>
+          <span class="task-count" id="taskCount">0 done</span>
+        </div>
+
+        <!-- Add Task -->
+        <div class="add-task-row">
+          <input type="text" id="taskInput" class="task-input" placeholder="What are you working on?" maxlength="80"/>
+          <select class="priority-select" id="prioritySelect">
+            <option value="high">🔴 High</option>
+            <option value="med" selected>🟡 Med</option>
+            <option value="low">🟢 Low</option>
+          </select>
+          <button class="add-task-btn" id="addTaskBtn">+</button>
+        </div>
+
+        <!-- Filters -->
+        <div class="task-filters">
+          <button class="filter-btn active" data-filter="all">All</button>
+          <button class="filter-btn" data-filter="active">Active</button>
+          <button class="filter-btn" data-filter="done">Done</button>
+          <button class="filter-btn" data-filter="high">🔴</button>
+        </div>
+
+        <!-- Task List -->
+        <ul class="task-list" id="taskList">
+          <li class="empty-tasks" id="emptyMsg">✨ Add your first task above!</li>
+        </ul>
+
+        <button class="clear-done-btn" id="clearDoneBtn">🗑 Clear Completed</button>
+      </section>
+
+      <!-- Achievements Section -->
+      <section class="achievements-section glass">
+        <h3 class="ach-title">🏆 Achievements</h3>
+        <div class="badges-grid" id="badgesGrid"></div>
+      </section>
+
+    </div>
+  </main>
+
+  <!-- Stats Modal -->
+  <div class="modal-overlay" id="statsModal">
+    <div class="modal glass">
+      <div class="modal-header">
+        <h3>📊 Your Statistics</h3>
+        <button class="close-modal" id="closeStats">✕</button>
+      </div>
+      <div class="stats-grid">
+        <div class="stat-card"><div class="stat-value" id="stToday">0</div><div class="stat-label">Sessions Today</div></div>
+        <div class="stat-card"><div class="stat-value" id="stMinutes">0m</div><div class="stat-label">Focus Minutes</div></div>
+        <div class="stat-card"><div class="stat-value" id="stTasks">0</div><div class="stat-label">Tasks Completed</div></div>
+        <div class="stat-card"><div class="stat-value" id="stStreak">0🔥</div><div class="stat-label">Day Streak</div></div>
+        <div class="stat-card"><div class="stat-value" id="stTotal">0</div><div class="stat-label">Total Sessions</div></div>
+        <div class="stat-card"><div class="stat-value" id="stLevel">1</div><div class="stat-label">Current Level</div></div>
+      </div>
+      <div class="weekly-chart">
+        <h4>Sessions This Week</h4>
+        <div class="chart-area">
+          <div class="chart-bars" id="chartBars"></div>
+          <div class="chart-days" id="chartDays"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Settings Modal -->
+  <div class="modal-overlay" id="settingsModal">
+    <div class="modal glass">
+      <div class="modal-header">
+        <h3>⚙️ Settings</h3>
+        <button class="close-modal" id="closeSettings">✕</button>
+      </div>
+      <div class="settings-list">
+        <div class="setting-row">
+          <label>Focus Duration (min)</label>
+          <input type="number" id="setFocus" class="setting-input" value="25" min="1" max="90"/>
+        </div>
+        <div class="setting-row">
+          <label>Short Break (min)</label>
+          <input type="number" id="setShort" class="setting-input" value="5" min="1" max="30"/>
+        </div>
+        <div class="setting-row">
+          <label>Long Break (min)</label>
+          <input type="number" id="setLong" class="setting-input" value="15" min="1" max="60"/>
+        </div>
+        <div class="setting-row">
+          <label>Sessions before long break</label>
+          <input type="number" id="setSessions" class="setting-input" value="4" min="2" max="8"/>
+        </div>
+        <div class="setting-row">
+          <label>Daily session goal</label>
+          <input type="number" id="setGoal" class="setting-input" value="8" min="1" max="20"/>
+        </div>
+        <div class="setting-row">
+          <label>Auto-start breaks</label>
+          <label class="toggle"><input type="checkbox" id="setAutoBreak"/><span class="toggle-slider"></span></label>
+        </div>
+        <div class="setting-row">
+          <label>Notification sound</label>
+          <label class="toggle"><input type="checkbox" id="setNotifSound" checked/><span class="toggle-slider"></span></label>
+        </div>
+        <div class="setting-row">
+          <label>Show breathing guide</label>
+          <label class="toggle"><input type="checkbox" id="setBreathing" checked/><span class="toggle-slider"></span></label>
+        </div>
+      </div>
+      <button class="save-settings-btn" id="saveSettings">💾 Save Settings</button>
+    </div>
+  </div>
+
+  <!-- Toast Notification -->
+  <div class="toast" id="toast"></div>
+
+  <!-- Achievement Popup -->
+  <div class="ach-popup" id="achPopup">
+    <div class="ach-popup-icon" id="achPopupIcon"></div>
+    <div class="ach-popup-text">
+      <div class="ach-popup-title" id="achPopupTitle"></div>
+      <div class="ach-popup-desc" id="achPopupDesc"></div>
+    </div>
+  </div>
+
+  <script src="auth.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="violet">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>FocusFlow – Login</title>
+  <meta name="description" content="Sign in or create your FocusFlow account to save your progress."/>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="auth.css"/>
+</head>
+<body>
+  <canvas id="particles"></canvas>
+
+  <div class="auth-wrapper">
+    <div class="auth-card">
+
+      <!-- Logo -->
+      <div class="auth-logo">
+        <span class="auth-logo-icon">⚡</span>
+        <span class="auth-logo-text">FocusFlow</span>
+      </div>
+      <p class="auth-tagline">Your personal focus & productivity companion</p>
+
+      <!-- Tabs -->
+      <div class="auth-tabs">
+        <button class="auth-tab active" id="tabLogin">Sign In</button>
+        <button class="auth-tab" id="tabRegister">Create Account</button>
+      </div>
+
+      <!-- Global Error -->
+      <div class="global-error" id="globalError"></div>
+
+      <!-- ── LOGIN FORM ── -->
+      <div class="auth-form-pane" id="loginPane">
+        <div class="field-group">
+          <label for="loginEmail">Email Address</label>
+          <input type="email" id="loginEmail" class="auth-input" placeholder="you@example.com" autocomplete="email"/>
+          <span class="field-error" id="loginEmailErr"></span>
+        </div>
+        <div class="field-group">
+          <label for="loginPassword">Password</label>
+          <input type="password" id="loginPassword" class="auth-input" placeholder="Your password" autocomplete="current-password"/>
+          <span class="field-error" id="loginPasswordErr"></span>
+        </div>
+        <button class="auth-btn" id="loginBtn">
+          <span class="btn-text">Sign In →</span>
+          <div class="btn-spinner"></div>
+        </button>
+      </div>
+
+      <!-- ── REGISTER FORM ── -->
+      <div class="auth-form-pane hidden" id="registerPane">
+        <div class="field-group">
+          <label for="regName">Your Name</label>
+          <input type="text" id="regName" class="auth-input" placeholder="Alex Johnson" autocomplete="name"/>
+          <span class="field-error" id="regNameErr"></span>
+        </div>
+        <div class="field-group">
+          <label for="regEmail">Email Address</label>
+          <input type="email" id="regEmail" class="auth-input" placeholder="you@example.com" autocomplete="email"/>
+          <span class="field-error" id="regEmailErr"></span>
+        </div>
+        <div class="field-group">
+          <label for="regPassword">Password</label>
+          <input type="password" id="regPassword" class="auth-input" placeholder="At least 6 characters" autocomplete="new-password"/>
+          <span class="field-error" id="regPasswordErr"></span>
+        </div>
+        <div class="field-group">
+          <label for="regConfirm">Confirm Password</label>
+          <input type="password" id="regConfirm" class="auth-input" placeholder="Repeat password" autocomplete="new-password"/>
+          <span class="field-error" id="regConfirmErr"></span>
+        </div>
+        <button class="auth-btn" id="registerBtn">
+          <span class="btn-text">Create Account 🚀</span>
+          <div class="btn-spinner"></div>
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div class="toast" id="toast"></div>
+
+  <script src="auth.js"></script>
+  <script>
+    // Redirect if already logged in
+    requireGuest();
+
+    // ── Particles ──
+    (function() {
+      const c = document.getElementById('particles');
+      const ctx = c.getContext('2d');
+      let W, H, pts = [];
+      function resize() { W = c.width = innerWidth; H = c.height = innerHeight; }
+      resize(); window.addEventListener('resize', resize);
+      for (let i=0;i<55;i++) pts.push({x:Math.random()*1920,y:Math.random()*1080,r:Math.random()*1.4+0.3,vx:(Math.random()-.5)*.25,vy:(Math.random()-.5)*.25,o:Math.random()*.35+.05});
+      function draw() {
+        ctx.clearRect(0,0,W,H);
+        pts.forEach(p=>{p.x+=p.vx;p.y+=p.vy;if(p.x<0)p.x=W;if(p.x>W)p.x=0;if(p.y<0)p.y=H;if(p.y>H)p.y=0;ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,Math.PI*2);ctx.fillStyle=`rgba(124,58,237,${p.o})`;ctx.fill();});
+        requestAnimationFrame(draw);
+      }
+      draw();
+    })();
+
+    // ── Tab switching ──
+    const tabLogin    = document.getElementById('tabLogin');
+    const tabRegister = document.getElementById('tabRegister');
+    const loginPane   = document.getElementById('loginPane');
+    const registerPane= document.getElementById('registerPane');
+
+    tabLogin.addEventListener('click', () => {
+      tabLogin.classList.add('active'); tabRegister.classList.remove('active');
+      loginPane.classList.remove('hidden'); registerPane.classList.add('hidden');
+      clearErrors();
+    });
+    tabRegister.addEventListener('click', () => {
+      tabRegister.classList.add('active'); tabLogin.classList.remove('active');
+      registerPane.classList.remove('hidden'); loginPane.classList.add('hidden');
+      clearErrors();
+    });
+
+    function clearErrors() {
+      document.querySelectorAll('.field-error').forEach(e => e.textContent = '');
+      document.querySelectorAll('.auth-input').forEach(e => e.classList.remove('error'));
+      hideGlobalError();
+    }
+    function showGlobalError(msg) {
+      const el = document.getElementById('globalError');
+      el.textContent = msg; el.classList.add('show');
+    }
+    function hideGlobalError() {
+      document.getElementById('globalError').classList.remove('show');
+    }
+    function fieldErr(id, msg) {
+      document.getElementById(id).textContent = msg;
+      const input = document.getElementById(id.replace('Err',''));
+      if (input) input.classList.add('error');
+    }
+
+    let toastTimer;
+    function showToast(msg) {
+      const t = document.getElementById('toast');
+      t.textContent = msg; t.classList.add('show');
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => t.classList.remove('show'), 3000);
+    }
+
+    function setLoading(btn, loading) {
+      btn.classList.toggle('loading', loading);
+      btn.disabled = loading;
+    }
+
+    // ── Login ──
+    document.getElementById('loginBtn').addEventListener('click', async () => {
+      clearErrors();
+      const email = document.getElementById('loginEmail').value.trim();
+      const pass  = document.getElementById('loginPassword').value;
+      let valid = true;
+
+      if (!email) { fieldErr('loginEmailErr','Email is required'); valid=false; }
+      else if (!/\S+@\S+\.\S+/.test(email)) { fieldErr('loginEmailErr','Enter a valid email'); valid=false; }
+      if (!pass) { fieldErr('loginPasswordErr','Password is required'); valid=false; }
+      if (!valid) return;
+
+      const btn = document.getElementById('loginBtn');
+      setLoading(btn, true);
+      try {
+        await authLogin(email, pass);
+        showToast('Welcome back! 🎉');
+        setTimeout(() => window.location.href = 'index.html', 800);
+      } catch(e) {
+        showGlobalError(e.message);
+        setLoading(btn, false);
+      }
+    });
+
+    // ── Register ──
+    document.getElementById('registerBtn').addEventListener('click', async () => {
+      clearErrors();
+      const name    = document.getElementById('regName').value.trim();
+      const email   = document.getElementById('regEmail').value.trim();
+      const pass    = document.getElementById('regPassword').value;
+      const confirm = document.getElementById('regConfirm').value;
+      let valid = true;
+
+      if (!name)  { fieldErr('regNameErr','Name is required'); valid=false; }
+      if (!email) { fieldErr('regEmailErr','Email is required'); valid=false; }
+      else if (!/\S+@\S+\.\S+/.test(email)) { fieldErr('regEmailErr','Enter a valid email'); valid=false; }
+      if (!pass)  { fieldErr('regPasswordErr','Password is required'); valid=false; }
+      else if (pass.length < 6) { fieldErr('regPasswordErr','At least 6 characters'); valid=false; }
+      if (pass !== confirm) { fieldErr('regConfirmErr','Passwords do not match'); valid=false; }
+      if (!valid) return;
+
+      const btn = document.getElementById('registerBtn');
+      setLoading(btn, true);
+      try {
+        await authRegister(name, email, pass);
+        showToast('Account created! Welcome 🚀');
+        setTimeout(() => window.location.href = 'index.html', 900);
+      } catch(e) {
+        showGlobalError(e.message);
+        setLoading(btn, false);
+      }
+    });
+
+    // Enter key support
+    document.getElementById('loginPassword').addEventListener('keydown', e => { if(e.key==='Enter') document.getElementById('loginBtn').click(); });
+    document.getElementById('regConfirm').addEventListener('keydown', e => { if(e.key==='Enter') document.getElementById('registerBtn').click(); });
+  </script>
+</body>
+</html>

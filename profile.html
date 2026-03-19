@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="violet">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>My Profile – FocusFlow</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="auth.css"/>
+</head>
+<body>
+  <canvas id="particles"></canvas>
+
+  <div class="profile-layout">
+
+    <!-- Top bar -->
+    <div class="profile-topbar">
+      <a href="index.html" class="back-btn">← Back to Timer</a>
+      <span class="profile-topbar-title">My Profile</span>
+    </div>
+
+    <!-- ── Section 1: Avatar & Identity ── -->
+    <div class="profile-section">
+      <div class="section-title">Identity</div>
+
+      <div class="avatar-hero">
+        <div class="avatar-display" id="avatarDisplay" title="Click to change avatar">🧑‍🎓</div>
+        <div class="avatar-info">
+          <div class="avatar-name" id="avatarName">Loading...</div>
+          <div class="avatar-email" id="avatarEmail"></div>
+          <div class="avatar-level">⚡ <span id="avatarLevel">Level 1</span> · <span id="avatarXP">0 XP</span></div>
+        </div>
+      </div>
+
+      <!-- Emoji picker -->
+      <div class="emoji-picker" id="emojiPicker"></div>
+
+      <div class="profile-fields">
+        <div>
+          <label class="profile-label">Display Name</label>
+          <input type="text" id="pfName" class="profile-input" placeholder="Your name" maxlength="32"/>
+        </div>
+        <div>
+          <label class="profile-label">Username</label>
+          <input type="text" id="pfUsername" class="profile-input" placeholder="@yourhandle" maxlength="20"/>
+        </div>
+        <div class="full-width">
+          <label class="profile-label">Bio</label>
+          <textarea id="pfBio" class="profile-textarea" placeholder="Tell us about yourself and your study goals..." maxlength="160"></textarea>
+        </div>
+      </div>
+
+      <div class="btn-row" style="margin-top:18px">
+        <button class="save-btn" id="saveIdentity">💾 Save Profile</button>
+      </div>
+    </div>
+
+    <!-- ── Section 2: Study Preferences ── -->
+    <div class="profile-section">
+      <div class="section-title">Study Preferences</div>
+      <div class="profile-fields">
+        <div>
+          <label class="profile-label">Favourite Subject</label>
+          <input type="text" id="pfSubject" class="profile-input" placeholder="e.g. Mathematics, CS, History"/>
+        </div>
+        <div>
+          <label class="profile-label">Study Schedule</label>
+          <select id="pfSchedule" class="profile-select">
+            <option value="morning">🌅 Morning Person</option>
+            <option value="afternoon">☀️ Afternoon Worker</option>
+            <option value="evening">🌆 Evening Studier</option>
+            <option value="night">🌙 Night Owl</option>
+          </select>
+        </div>
+        <div>
+          <label class="profile-label">Daily Session Goal</label>
+          <input type="number" id="pfDailyGoal" class="profile-input" value="8" min="1" max="20"/>
+        </div>
+        <div>
+          <label class="profile-label">Focus Style</label>
+          <select id="pfFocusStyle" class="profile-select">
+            <option value="pomodoro">🍅 Pomodoro (25/5)</option>
+            <option value="deep">🌊 Deep Work (50/10)</option>
+            <option value="light">⚡ Light (15/3)</option>
+            <option value="custom">⚙️ Custom</option>
+          </select>
+        </div>
+      </div>
+      <div class="btn-row" style="margin-top:18px">
+        <button class="save-btn" id="savePrefs">💾 Save Preferences</button>
+      </div>
+    </div>
+
+    <!-- ── Section 3: Lifetime Stats ── -->
+    <div class="profile-section">
+      <div class="section-title">Lifetime Stats</div>
+      <div class="profile-stats">
+        <div class="pstat-card"><div class="pstat-value" id="psTotalSessions">0</div><div class="pstat-label">Total Sessions</div></div>
+        <div class="pstat-card"><div class="pstat-value" id="psTodaySessions">0</div><div class="pstat-label">Today's Sessions</div></div>
+        <div class="pstat-card"><div class="pstat-value" id="psMinutes">0</div><div class="pstat-label">Focus Minutes</div></div>
+        <div class="pstat-card"><div class="pstat-value" id="psTasks">0</div><div class="pstat-label">Tasks Completed</div></div>
+        <div class="pstat-card"><div class="pstat-value" id="psStreak">0🔥</div><div class="pstat-label">Day Streak</div></div>
+        <div class="pstat-card"><div class="pstat-value" id="psLevel">1</div><div class="pstat-label">Current Level</div></div>
+      </div>
+    </div>
+
+    <!-- ── Section 4: Account & Security ── -->
+    <div class="profile-section">
+      <div class="section-title">Account & Security</div>
+      <div class="profile-fields">
+        <div>
+          <label class="profile-label">Email (read-only)</label>
+          <input type="email" id="pfEmail" class="profile-input" readonly style="opacity:0.5;cursor:not-allowed"/>
+        </div>
+        <div></div>
+        <div>
+          <label class="profile-label">Current Password</label>
+          <input type="password" id="pfCurrentPass" class="profile-input" placeholder="Enter current password"/>
+        </div>
+        <div>
+          <label class="profile-label">New Password</label>
+          <input type="password" id="pfNewPass" class="profile-input" placeholder="New password (min 6 chars)"/>
+        </div>
+      </div>
+      <div class="btn-row" style="margin-top:18px">
+        <button class="save-btn" id="changePassBtn">🔒 Change Password</button>
+      </div>
+    </div>
+
+    <!-- ── Section 5: Danger Zone ── -->
+    <div class="profile-section">
+      <div class="section-title" style="color: var(--danger);">Danger Zone</div>
+      <p style="font-size:0.85rem;color:var(--text-dim);margin-bottom:16px;">
+        Deleting your account removes all your data permanently. This cannot be undone.
+      </p>
+      <div class="btn-row">
+        <button class="danger-btn" id="logoutBtn">🚪 Log Out</button>
+        <button class="danger-btn" id="deleteAccountBtn">🗑 Delete Account</button>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Toast -->
+  <div class="toast" id="toast"></div>
+
+  <script src="auth.js"></script>
+  <script src="profile.js"></script>
+</body>
+</html>
